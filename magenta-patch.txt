@@ -1,3 +1,16 @@
+diff --git a/kernel/arch/arm64/arch.cpp b/kernel/arch/arm64/arch.cpp
+index b22f29b..ccd7df5 100644
+--- a/kernel/arch/arm64/arch.cpp
++++ b/kernel/arch/arm64/arch.cpp
+@@ -210,7 +210,7 @@ static void arm64_cpu_early_init(void)
+     ARM64_WRITE_SYSREG(pmcntenset_el0, (1UL << 31));
+ 
+     /* enable user space access to cycle counter */
+-    ARM64_WRITE_SYSREG(pmuserenr_el0, 1UL);
++    //ARM64_WRITE_SYSREG(pmuserenr_el0, 1UL);
+ 
+     /* enable user space access to virtual counter (CNTVCT_EL0) */
+     ARM64_WRITE_SYSREG(cntkctl_el1, 1UL << 1);
 diff --git a/kernel/arch/x86/64/syscall.S b/kernel/arch/x86/64/syscall.S
 index 16ed5e6..5d8948f 100644
 --- a/kernel/arch/x86/64/syscall.S
@@ -11,19 +24,24 @@ index 16ed5e6..5d8948f 100644
      jae     .Lunknown_syscall
      jmp     *.Lcall_wrapper_table(, %rax, 8)
  #include <magenta/syscall-kernel-branches.S>
+diff --git a/kernel/dev/pcie/include/dev/pci_config.h b/kernel/dev/pcie/include/dev/pci_config.h
+index 6ac7448..93c24da 100644
+--- a/kernel/dev/pcie/include/dev/pci_config.h
++++ b/kernel/dev/pcie/include/dev/pci_config.h
+@@ -76,7 +76,7 @@ public:
+     static constexpr PciReg8 kInterruptPin = PciReg8(0x3D);
+     static constexpr PciReg8 kMinGrant = PciReg8(0x3E);
+     static constexpr PciReg8 kMaxLatency = PciReg8(0x3F);
+-    static constexpr uint8_t kStdCfgEnd = kMaxLatency.offset() + sizeof(uint8_t);
++    static constexpr uint8_t kStdCfgEnd = static_cast<uint8_t>(kMaxLatency.offset() + sizeof(uint8_t));
+ 
+     /* pci to pci bridge config
+      * Unlike a normal PCI header, a bridge only has two BARs, but the BAR offset in config space
 diff --git a/kernel/lib/syscalls/syscalls.cpp b/kernel/lib/syscalls/syscalls.cpp
-index dda307a..958f052 100644
+index dda307a..f6c6836 100644
 --- a/kernel/lib/syscalls/syscalls.cpp
 +++ b/kernel/lib/syscalls/syscalls.cpp
-@@ -25,6 +25,7 @@ int sys_invalid_syscall(uint64_t num, uint64_t pc,
-                         uintptr_t vdso_code_address) {
-     LTRACEF("invalid syscall %lu from PC %#lx vDSO code %#lx\n",
-             num, pc, vdso_code_address);
-+printf("invalid %lx\n", num);
-     return ERR_BAD_SYSCALL;
- }
- 
-@@ -34,6 +35,7 @@ inline uint64_t invoke_syscall(
+@@ -34,6 +34,7 @@ inline uint64_t invoke_syscall(
      uint64_t arg5, uint64_t arg6, uint64_t arg7, uint64_t arg8) {
      uint64_t ret;
  
@@ -31,7 +49,7 @@ index dda307a..958f052 100644
      const uintptr_t vdso_code_address =
          ProcessDispatcher::GetCurrent()->vdso_code_address();
      const uint64_t pc_offset = pc - vdso_code_address;
-@@ -43,6 +45,9 @@ inline uint64_t invoke_syscall(
+@@ -43,6 +44,9 @@ inline uint64_t invoke_syscall(
          if (unlikely(!VDso::ValidSyscallPC::name(pc_offset)))           \
              return sys_invalid_syscall(syscall_num, pc, vdso_code_address); \
      } while (0)
@@ -41,7 +59,7 @@ index dda307a..958f052 100644
  
      switch (syscall_num) {
  #include <magenta/syscall-invocation-cases.inc>
-@@ -123,7 +128,7 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
+@@ -123,7 +127,7 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
          ProcessDispatcher::GetCurrent()->vdso_code_address();
  
      uint64_t ret;
@@ -50,7 +68,7 @@ index dda307a..958f052 100644
          ret = sys_invalid_syscall(syscall_num, ip, vdso_code_address);
      } else {
          ret = make_call();
-@@ -141,11 +146,11 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
+@@ -141,11 +145,11 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
      return {ret, thread_is_signaled(get_current_thread())};
  }
  
@@ -76,31 +94,3 @@ index 14161d1..5eecc68 100644
      return 0;
  }
  mx_status_t sys_syscall_test_1(int a) {
-diff --git a/system/core/devmgr/devmgr.c b/system/core/devmgr/devmgr.c
-index c2bf596..d075b45 100644
---- a/system/core/devmgr/devmgr.c
-+++ b/system/core/devmgr/devmgr.c
-@@ -223,6 +223,7 @@ static mx_status_t block_device_added(int dirfd, int event, const char* name, vo
- }
- 
- static const char* argv_sh[] = { "/boot/bin/sh" };
-+static const char* argv_fuzzer[] = { "/boot/bin/fuzz", "-vv" };
- static const char* argv_autorun0[] = { "/boot/bin/sh", "/boot/autorun" };
- static const char* argv_init[] = { "/system/bin/init" };
- 
-@@ -316,8 +317,13 @@ static int console_starter(void* arg) {
-     for (unsigned n = 0; n < 30; n++) {
-         int fd;
-         if ((fd = open("/dev/misc/console", O_RDWR)) >= 0) {
--            devmgr_launch(svcs_job_handle, "sh:console",
--                          countof(argv_sh), argv_sh, envp, fd, NULL, NULL, 0);
-+            if(getenv("fuzz"))
-+                devmgr_launch(svcs_job_handle, "fuzz:console",
-+                            countof(argv_fuzzer), argv_fuzzer, envp, fd, NULL, NULL, 0);
-+            else {
-+                devmgr_launch(svcs_job_handle, "sh:console",
-+                            countof(argv_sh), argv_sh, envp, fd, NULL, NULL, 0);
-+            }
-             break;
-         }
-         mx_nanosleep(mx_deadline_after(MX_MSEC(100)));
