@@ -35,6 +35,11 @@ Tested on magenta commit cdf18c50c75685dd550edb91394f214062d725f0.
   fix two bugs that were fixed today..  Those bugs might be fixed
   in mainline by the time you read this.
 
+## Aarch64
+
+- Build magenta with `make -j32 magenta-qemu-arm64`
+- set `AARCH64=1` and run the same tools, ie: `AARCH64=1 ./runFuzz -M m1`
+
 # Files
 - `README.md` - hello! thats me!
 - `magenta-patch.txt` - patch to magenta system to support fuzzing
