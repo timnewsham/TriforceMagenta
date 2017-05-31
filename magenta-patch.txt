@@ -1,13 +1,14 @@
 diff --git a/kernel/arch/arm64/arch.cpp b/kernel/arch/arm64/arch.cpp
-index b22f29b..ccd7df5 100644
+index b22f29b..27a5590 100644
 --- a/kernel/arch/arm64/arch.cpp
 +++ b/kernel/arch/arm64/arch.cpp
-@@ -210,7 +210,7 @@ static void arm64_cpu_early_init(void)
+@@ -210,7 +210,9 @@ static void arm64_cpu_early_init(void)
      ARM64_WRITE_SYSREG(pmcntenset_el0, (1UL << 31));
  
      /* enable user space access to cycle counter */
--    ARM64_WRITE_SYSREG(pmuserenr_el0, 1UL);
-+    //ARM64_WRITE_SYSREG(pmuserenr_el0, 1UL);
++#ifdef THIS_BREAKS_TRIFORCE_QEMU
+     ARM64_WRITE_SYSREG(pmuserenr_el0, 1UL);
++#endif
  
      /* enable user space access to virtual counter (CNTVCT_EL0) */
      ARM64_WRITE_SYSREG(cntkctl_el1, 1UL << 1);
