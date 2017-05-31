@@ -370,8 +370,8 @@ showSysRecArr(struct sysRec *x, int n)
 unsigned long
 doSysRec(struct sysRec *x)
 {
-#ifdef __x86_64__
     uint64_t ret;
+#if __x86_64__
     register uint64_t nr __asm__("rax") = x->nr;
     register uint64_t a0 __asm__("rdi") = x->args[0];
     register uint64_t a1 __asm__("rsi") = x->args[1];
@@ -384,11 +384,21 @@ doSysRec(struct sysRec *x)
         : "=a"(ret)
         : "a"(nr), "D"(a0), "S"(a1), "d"(a2), "r"(a3), "r"(a4), "r"(a5)
         );
-    return ret;
-#else
-    printf("XXX doSysRec not implemented!\n");
-    return 0;
+#elif __aarch64__
+    register uint64_t nr __asm__("x16") = x->nr;
+    register uint64_t a0 __asm__("x0") = x->args[0];
+    register uint64_t a1 __asm__("x1") = x->args[1];
+    register uint64_t a2 __asm__("x2") = x->args[2];
+    register uint64_t a3 __asm__("x3") = x->args[3];
+    register uint64_t a4 __asm__("x4") = x->args[4];
+    register uint64_t a5 __asm__("x5") = x->args[5];
+    __asm__(
+        "svc #0x0\n"
+        : "=r"(ret)
+        : "r"(nr), "r"(a0), "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5)
+        );
 #endif
+    return ret;
 }
 
 unsigned long
