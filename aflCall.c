@@ -43,6 +43,7 @@ aflInit(void)
 static inline u_long
 aflCall(u_long a0, u_long a1, u_long a2)
 {
+    printf("do aflCall %lx %lx %lx\n", a0, a1, a2);
     u_long ret;
 #if __x86_64__
     __asm__(".byte 0x0f, 0x24" 
@@ -50,9 +51,12 @@ aflCall(u_long a0, u_long a1, u_long a2)
             : "D"(a0), "S"(a1), "d"(a2)
             );
 #elif __aarch64__
-    __asm__(".byte 0x41, 0x46, 0x1f, 0xd4"
+    register uint64_t x0 __asm__("x0") = a0;
+    register uint64_t x1 __asm__("x1") = a1;
+    register uint64_t x2 __asm__("x2") = a2;
+    __asm__("svc #0xfa32"
             : "=r"(ret)
-            : "r"(a0), "r"(a1), "r"(a1)
+            : "r"(x0), "r"(x1), "r"(x2)
             );
 #endif
     return ret;
