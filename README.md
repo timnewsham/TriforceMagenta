@@ -27,10 +27,10 @@ Tested on magenta commit cdf18c50c75685dd550edb91394f214062d725f0.
   in mainline by the time you read this.
 
 # Files
-- README.md
-- magenta-patch.txt - patch to magenta system to support fuzzing
-- aflCall.c argfd.c driver.c drv.h parse.c sysc.c sysc.h - sources for the fuzz driver
-- rules.mk private.h private-remoteio.h - build helpers for building in magenta, with some stolen private headers
-- Makefile testAfl.c - testAfl tool for running tests from linux host
-- gen.py - Script for generating test inputs
-- runTest runFuzz runSh repro - shell scripts for running tests, running a fuzzer, running the system normally, and reproing crashers.
+- `README.md` - hello! thats me!
+- `magenta-patch.txt` - patch to magenta system to support fuzzing
+- `aflCall.c argfd.c driver.c drv.h parse.c sysc.c sysc.h` - sources for the fuzz driver
+- `rules.mk private.h private-remoteio.h` - build helpers for building in magenta, with some stolen private headers
+- `Makefile testAfl.c` - testAfl tool for running tests from linux host
+- `gen.py` - Script for generating test inputs
+- `runTest runFuzz runSh repro` - shell scripts for running tests, running a fuzzer, running the system normally, and reproing crashers.
