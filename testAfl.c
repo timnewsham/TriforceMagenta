@@ -89,7 +89,7 @@ runTest(char *fname, char *dat)
     xperror(x != 4, "read pid");
     printf("test running in pid %d\n", workpid);
     fflush(stdout);
-    alarm(2);
+    alarm(4);
     do {
         x = read(srv[0], &status, 4);
     } while(x == -1 && errno == EINTR);

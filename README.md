@@ -17,6 +17,15 @@ Fuzzer for Magenta using Triforce AFL
 - to start a fuzzer run `runFuzz -M m0`.  See the runFuzz script for
   more options.
 - to get information about crashes, run `repro`.  See script for details.
+- If you find interesting crashes and want to analyze them in more
+  detail than provided by the `repro` output, copy the input file
+  to the current directory, add an entry for it in the
+  `USER_MANIFEST_LINES` entry in `rules.mk`, rebuild magenta, and
+  then use `runSh` to run a shell.  You can run
+  `gdb magenta/magenta/build-magenta-pc-x86-64/magenta.elf` and
+  `target remote :1234` to debug the kernel.  To reproduce the
+  crash from the shell run `fuzz -tvv /path/to/inputfile` specifying
+  the location where you installed the input file.
 
 Tested on magenta commit cdf18c50c75685dd550edb91394f214062d725f0.
 - note: I had to steal an internal header file.  this should be
