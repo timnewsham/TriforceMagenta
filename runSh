@@ -1,13 +1,20 @@
 #!/bin/sh
 #
 # Boot the system to a shell in qemu, allowing gdb to connect.
+# If AARCH64 is set, run the AARCH64 kernel.
 #
 
 AFL=${TAFL:-../TriforceAFL}
-B=magenta/build-magenta-pc-x86-64
+if [ ! -z "$AARCH64" ] ; then
+    B=magenta/build-magenta-qemu-arm64
+    Q="$AFL/qemu-system-aarch64 -machine virt -cpu cortex-a57"
+else
+    B=magenta/build-magenta-pc-x86-64
+    Q="$AFL/qemu-system-x86_64 -machine q35 -cpu Haswell,+smap"
+fi
 
-$AFL/afl-qemu-system-trace -s \
-    -m 1024 -nographic -net none -machine q35 -cpu Haswell,+smap \
+$Q -s \
+    -m 1024 -nographic -net none \
     -kernel $B/magenta.bin -initrd $B/bootdata.bin \
     -append "TERM=xterm-256color kernel.entropy=562afa809d13833970ecb91af535b7f35d0adaadb6d0afc681a2366ab2d376b4 kernel.halt_on_panic=true" \
     "$@"

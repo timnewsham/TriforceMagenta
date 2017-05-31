@@ -43,12 +43,17 @@ aflInit(void)
 static inline u_long
 aflCall(u_long a0, u_long a1, u_long a2)
 {
+#ifdef __x86_64__
     u_long ret;
     __asm__(".byte 0x0f, 0x24" 
             : "=a"(ret) 
             : "D"(a0), "S"(a1), "d"(a2)
             );
     return ret;
+#else
+    printf("XXXX aflCall unimplemented!\n");
+    return 0;
+#endif
 }
 
 int

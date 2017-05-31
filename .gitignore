@@ -1,0 +1,9 @@
+.*.swp
+*.o
+.fuzzdat
+inputs
+outputs
+magenta
+magenta.elf
+testAfl
+panicTest
