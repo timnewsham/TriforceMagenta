@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# Run a series of test cases through the driver one at a time
+# using the testAfl tool.
+#
+
+AFL=${TAFL:-../TriforceAFL}
+B=magenta/build-magenta-pc-x86-64
+
+getSym() {
+    name=$1
+    gdb -batch -ex "p/x &$name" $B/magenta.elf 2>/dev/null |sed 's/^.*0x//g'|tail -1
+}
+
+# panic_shell_start is called after printing the panic message
+CRASH=`getSym panic_shell_start`
+
+# platform_panic_start happens right away, but no messages printed
+#CRASH=`getSym platform_panic_start`
+
+./testAfl $AFL/afl-qemu-system-trace \
+    -m 1024 -nographic -net none -machine q35 -cpu Haswell,+smap \
+    -kernel $B/magenta.bin -initrd $B/bootdata.bin \
+    -append "TERM=xterm-256color kernel.entropy=562afa809d13833970ecb91af535b7f35d0adaadb6d0afc681a2366ab2d376b4 kernel.halt_on_panic=true fuzz=true" \
+    -aflPanicAddr "$CRASH" \
+    -aflFile @@ -- "$@"
+

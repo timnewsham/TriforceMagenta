@@ -1,0 +1,3 @@
+#!/bin/sh
+
+script -c "./runTest outputs/*/crashes/id*" crashLog.txt

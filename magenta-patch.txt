@@ -1,0 +1,101 @@
+diff --git a/kernel/arch/x86/64/syscall.S b/kernel/arch/x86/64/syscall.S
+index 16ed5e6..5d8948f 100644
+--- a/kernel/arch/x86/64/syscall.S
++++ b/kernel/arch/x86/64/syscall.S
+@@ -277,7 +277,7 @@ FUNCTION(x86_syscall)
+     // pre_push and post_pop macros above to maintain alignment.
+ #if WITH_LIB_SYSCALLS
+     // Verify the syscall is in range and jump to it.
+-    cmp     $MX_SYS_COUNT, %eax
++    cmp     $MX_SYS_COUNT, %rax
+     jae     .Lunknown_syscall
+     jmp     *.Lcall_wrapper_table(, %rax, 8)
+ #include <magenta/syscall-kernel-branches.S>
+diff --git a/kernel/lib/syscalls/syscalls.cpp b/kernel/lib/syscalls/syscalls.cpp
+index dda307a..d20a9dc 100644
+--- a/kernel/lib/syscalls/syscalls.cpp
++++ b/kernel/lib/syscalls/syscalls.cpp
+@@ -25,6 +25,7 @@ int sys_invalid_syscall(uint64_t num, uint64_t pc,
+                         uintptr_t vdso_code_address) {
+     LTRACEF("invalid syscall %lu from PC %#lx vDSO code %#lx\n",
+             num, pc, vdso_code_address);
++printf("invalid %lx\n", num);
+     return ERR_BAD_SYSCALL;
+ }
+ 
+@@ -34,6 +35,7 @@ inline uint64_t invoke_syscall(
+     uint64_t arg5, uint64_t arg6, uint64_t arg7, uint64_t arg8) {
+     uint64_t ret;
+ 
++#ifdef nope
+     const uintptr_t vdso_code_address =
+         ProcessDispatcher::GetCurrent()->vdso_code_address();
+     const uint64_t pc_offset = pc - vdso_code_address;
+@@ -43,6 +45,9 @@ inline uint64_t invoke_syscall(
+         if (unlikely(!VDso::ValidSyscallPC::name(pc_offset)))           \
+             return sys_invalid_syscall(syscall_num, pc, vdso_code_address); \
+     } while (0)
++#else
++#define CHECK_SYSCALL_PC(name) 
++#endif
+ 
+     switch (syscall_num) {
+ #include <magenta/syscall-invocation-cases.inc>
+@@ -123,7 +128,7 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
+         ProcessDispatcher::GetCurrent()->vdso_code_address();
+ 
+     uint64_t ret;
+-    if (unlikely(!valid_pc(ip - vdso_code_address))) {
++    if (0 && unlikely(!valid_pc(ip - vdso_code_address))) {
+         ret = sys_invalid_syscall(syscall_num, ip, vdso_code_address);
+     } else {
+         ret = make_call();
+@@ -141,7 +146,7 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
+     return {ret, thread_is_signaled(get_current_thread())};
+ }
+ 
+-inline x86_64_syscall_result unknown_syscall(uint64_t syscall_num, uint64_t ip) {
++x86_64_syscall_result unknown_syscall(uint64_t syscall_num, uint64_t ip) {
+     return do_syscall(syscall_num, ip,
+                       [](uintptr_t) { return false; },
+                       [&]() {
+diff --git a/kernel/lib/syscalls/syscalls_test.cpp b/kernel/lib/syscalls/syscalls_test.cpp
+index 14161d1..5eecc68 100644
+--- a/kernel/lib/syscalls/syscalls_test.cpp
++++ b/kernel/lib/syscalls/syscalls_test.cpp
+@@ -7,6 +7,7 @@
+ #include "syscalls_priv.h"
+ 
+ mx_status_t sys_syscall_test_0(void) {
++    panic("FUZZER PANIC TEST");
+     return 0;
+ }
+ mx_status_t sys_syscall_test_1(int a) {
+diff --git a/system/core/devmgr/devmgr.c b/system/core/devmgr/devmgr.c
+index c2bf596..d075b45 100644
+--- a/system/core/devmgr/devmgr.c
++++ b/system/core/devmgr/devmgr.c
+@@ -223,6 +223,7 @@ static mx_status_t block_device_added(int dirfd, int event, const char* name, vo
+ }
+ 
+ static const char* argv_sh[] = { "/boot/bin/sh" };
++static const char* argv_fuzzer[] = { "/boot/bin/fuzz", "-vv" };
+ static const char* argv_autorun0[] = { "/boot/bin/sh", "/boot/autorun" };
+ static const char* argv_init[] = { "/system/bin/init" };
+ 
+@@ -316,8 +317,13 @@ static int console_starter(void* arg) {
+     for (unsigned n = 0; n < 30; n++) {
+         int fd;
+         if ((fd = open("/dev/misc/console", O_RDWR)) >= 0) {
+-            devmgr_launch(svcs_job_handle, "sh:console",
+-                          countof(argv_sh), argv_sh, envp, fd, NULL, NULL, 0);
++            if(getenv("fuzz"))
++                devmgr_launch(svcs_job_handle, "fuzz:console",
++                            countof(argv_fuzzer), argv_fuzzer, envp, fd, NULL, NULL, 0);
++            else {
++                devmgr_launch(svcs_job_handle, "sh:console",
++                            countof(argv_sh), argv_sh, envp, fd, NULL, NULL, 0);
++            }
+             break;
+         }
+         mx_nanosleep(mx_deadline_after(MX_MSEC(100)));
