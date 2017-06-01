@@ -5,9 +5,7 @@ Fuzzer for Magenta using Triforce AFL
 - install [Triforce AFL](https://github.com/nccgroup/TriforceAFL) one
   directory up from where this directory is installed
 - get [Magenta](https://github.com/fuchsia-mirror/magenta)
-- apply magenta-patch.txt.  This patch will launch the fuzzer instead
-  of the shell if "fuzz=true" is passed on the kernel cmd line.
-  It also fixes a few bugs and disables the security checks
+- apply magenta-patch.txt.  It disables the security checks
   that prevent you from making system calls from arbitrary addresses.
 - symlink this dir under $MAGENTA/third_party/uapp/triforce
 - make a link to the top level magenta dir in this dir: `ln -s $HOME/src/magenta $MAGENTA`
@@ -27,13 +25,11 @@ Fuzzer for Magenta using Triforce AFL
   crash from the shell run `fuzz -tvv /path/to/inputfile` specifying
   the location where you installed the input file.
 
-Tested on magenta commit cdf18c50c75685dd550edb91394f214062d725f0.
+Tested on magenta commit 867cff6b1131374f17446a032a4879117c098d5a
 - note: I had to steal an internal header file.  this should be
   kept up to date if newer versions of magenta are used
 - note: I had to patch a few parts of the Magenta system to support
-  calling arbitrary syscalls from arbitrary program locations, and to
-  fix two bugs that were fixed today..  Those bugs might be fixed
-  in mainline by the time you read this.
+  calling arbitrary syscalls from arbitrary program locations.
 
 ## Aarch64
 

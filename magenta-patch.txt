@@ -1,8 +1,8 @@
 diff --git a/kernel/arch/arm64/arch.cpp b/kernel/arch/arm64/arch.cpp
-index b22f29b..27a5590 100644
+index f687fa4..9ad687b 100644
 --- a/kernel/arch/arm64/arch.cpp
 +++ b/kernel/arch/arm64/arch.cpp
-@@ -210,7 +210,9 @@ static void arm64_cpu_early_init(void)
+@@ -211,7 +211,9 @@ static void arm64_cpu_early_init(void)
      ARM64_WRITE_SYSREG(pmcntenset_el0, (1UL << 31));
  
      /* enable user space access to cycle counter */
@@ -12,34 +12,8 @@ index b22f29b..27a5590 100644
  
      /* enable user space access to virtual counter (CNTVCT_EL0) */
      ARM64_WRITE_SYSREG(cntkctl_el1, 1UL << 1);
-diff --git a/kernel/arch/x86/64/syscall.S b/kernel/arch/x86/64/syscall.S
-index 16ed5e6..5d8948f 100644
---- a/kernel/arch/x86/64/syscall.S
-+++ b/kernel/arch/x86/64/syscall.S
-@@ -277,7 +277,7 @@ FUNCTION(x86_syscall)
-     // pre_push and post_pop macros above to maintain alignment.
- #if WITH_LIB_SYSCALLS
-     // Verify the syscall is in range and jump to it.
--    cmp     $MX_SYS_COUNT, %eax
-+    cmp     $MX_SYS_COUNT, %rax
-     jae     .Lunknown_syscall
-     jmp     *.Lcall_wrapper_table(, %rax, 8)
- #include <magenta/syscall-kernel-branches.S>
-diff --git a/kernel/dev/pcie/include/dev/pci_config.h b/kernel/dev/pcie/include/dev/pci_config.h
-index 6ac7448..93c24da 100644
---- a/kernel/dev/pcie/include/dev/pci_config.h
-+++ b/kernel/dev/pcie/include/dev/pci_config.h
-@@ -76,7 +76,7 @@ public:
-     static constexpr PciReg8 kInterruptPin = PciReg8(0x3D);
-     static constexpr PciReg8 kMinGrant = PciReg8(0x3E);
-     static constexpr PciReg8 kMaxLatency = PciReg8(0x3F);
--    static constexpr uint8_t kStdCfgEnd = kMaxLatency.offset() + sizeof(uint8_t);
-+    static constexpr uint8_t kStdCfgEnd = static_cast<uint8_t>(kMaxLatency.offset() + sizeof(uint8_t));
- 
-     /* pci to pci bridge config
-      * Unlike a normal PCI header, a bridge only has two BARs, but the BAR offset in config space
 diff --git a/kernel/lib/syscalls/syscalls.cpp b/kernel/lib/syscalls/syscalls.cpp
-index dda307a..f6c6836 100644
+index d50efa6..4f36475 100644
 --- a/kernel/lib/syscalls/syscalls.cpp
 +++ b/kernel/lib/syscalls/syscalls.cpp
 @@ -34,6 +34,7 @@ inline uint64_t invoke_syscall(
@@ -60,7 +34,7 @@ index dda307a..f6c6836 100644
  
      switch (syscall_num) {
  #include <magenta/syscall-invocation-cases.inc>
-@@ -123,7 +127,7 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
+@@ -120,7 +124,7 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
          ProcessDispatcher::GetCurrent()->vdso_code_address();
  
      uint64_t ret;
@@ -69,17 +43,13 @@ index dda307a..f6c6836 100644
          ret = sys_invalid_syscall(syscall_num, ip, vdso_code_address);
      } else {
          ret = make_call();
-@@ -141,11 +145,11 @@ inline x86_64_syscall_result do_syscall(uint64_t syscall_num, uint64_t ip,
-     return {ret, thread_is_signaled(get_current_thread())};
- }
- 
--inline x86_64_syscall_result unknown_syscall(uint64_t syscall_num, uint64_t ip) {
-+x86_64_syscall_result unknown_syscall(uint64_t syscall_num, uint64_t ip) {
+@@ -142,7 +146,9 @@ x86_64_syscall_result unknown_syscall(uint64_t syscall_num, uint64_t ip) {
      return do_syscall(syscall_num, ip,
                        [](uintptr_t) { return false; },
                        [&]() {
--                          __builtin_unreachable();
-+                          //__builtin_unreachable();
++#ifndef FUZZER_PATCH_MADE_THIS_REACHABLE
+                           __builtin_unreachable();
++#endif
                            return ERR_INTERNAL;
                        });
  }
