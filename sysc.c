@@ -254,7 +254,7 @@ static int parseArgRef(struct slice *b, struct parseState *st, u_int64_t *x)
     if(getU8(b, &ncall) == -1
     || getU8(b, &narg) == -1
     || ncall >= st->ncalls
-    || narg >= 6)
+    || narg >= NARGS)
         return -1;
     *x = st->calls[ncall].args[narg];
     if(verbose) printf("argRef %llx - %d %d\n", (unsigned long long)*x, ncall, narg);
@@ -326,7 +326,7 @@ int parseSysRec(struct sysRec *calls, int ncalls, struct slice *b, struct sysRec
     if(getU16(b, &x->nr) == -1)
         return -1;
     if(verbose) printf("call %d\n", x->nr);
-    for(i = 0; i < 6; i++) {
+    for(i = 0; i < NARGS; i++) {
         if(verbose) printf("arg %d: ", i);
         if(parseArg(b, &st, &x->args[i]) == -1)
             return -1;

@@ -84,7 +84,7 @@ def parseSyscall(buf) :
     g = Getter(bs[0])
     bufs = bs[1:]
     nr = g.unpack1('!H')
-    args = [parseArg(g, bufs) for cnt in xrange(6)]
+    args = [parseArg(g, bufs) for cnt in xrange(NARGS)]
     ret = [nr] + args
     # for now we ignore g.rest() and residual bufs
     return ret

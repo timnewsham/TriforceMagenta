@@ -1,10 +1,11 @@
 
 #define BUFDELIM "\xa5\xc9\x92"
 #define CALLDELIM "\xb7\xe3\xfe"
+#define NARGS 8
 
 struct sysRec {
     u_int16_t nr;
-    u_int64_t args[6];
+    u_int64_t args[NARGS];
 };
 
 int parseSysRec(struct sysRec *calls, int ncalls, struct slice *b, struct sysRec *x);

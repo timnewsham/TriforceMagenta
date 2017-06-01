@@ -6,7 +6,7 @@ import struct, sys, subprocess
 
 BUFDELIM = "\xa5\xc9\x92"
 CALLDELIM = "\xb7\xe3\xfe"
-
+NARGS = 8
 
 class Buf(object) :
     def __init__(self) :
@@ -124,7 +124,7 @@ def mkArg(buf, xtra, x) :
 
 def mkSyscall(nr, *args) :
     args = list(args)
-    while len(args) < 6 :
+    while len(args) < NARGS :
         args.append(0)
 
     buf = Buf()
@@ -300,5 +300,5 @@ if __name__ == '__main__' :
     writeFn("inputs/ex4", mkSyscalls(ex4))
 
     # dont put this in inputs/
-    writeFn("./panicTest", mkSyscalls((PANICTEST, 1,2,3)))
+    #writeFn("./panicTest", mkSyscalls((PANICTEST, 1,2,3)))
 
