@@ -90,7 +90,7 @@ startWork(u_int64_t start, u_int64_t end)
         return 0;
     arr[0] = start;
     arr[1] = end;
-    arr[0]; arr[1];
+    __asm__("" ::: "memory"); // gcc, dont reorder these writes!
     return aflCall(3, (u_long)&arr[0], 0);
 }
 
