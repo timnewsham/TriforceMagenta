@@ -16,13 +16,19 @@ extern int verbose;
 /* internal syscall arg parsing state */
 #define NSLICES 7
 #define STKSZ 256
+#define NDEREF 4
+struct deref {
+    u_int64_t **frm, *to;
+};
 struct parseState {
     struct sysRec *calls;
     int ncalls;
     struct slice slices[NSLICES];
     u_int64_t sizeStk[STKSZ];
-    size_t nslices, bufpos, stkpos;
+    struct deref deref[NDEREF];
+    size_t nderef, nslices, bufpos, stkpos;
 };
+static struct parseState st;
 
 static int parseArg(struct slice *b, struct parseState *st, u_int64_t *x);
 
@@ -259,6 +265,26 @@ static int parseArgVec32(struct slice *b, struct parseState *st, u_int64_t *x)
     return 0;
 }
 
+/* Reference a previously defined argument as a pointer to a new arg. values get copied dynamically between calls */
+static int parseArgDeref(struct slice *b, struct parseState *st, u_int64_t *x)
+{
+    unsigned char ncall, narg;
+
+    if(getU8(b, &ncall) == -1
+    || getU8(b, &narg) == -1
+    || ncall >= st->ncalls
+    || narg >= NARGS
+    || st->nderef > NDEREF)
+        return -1;
+    *x = 0xDDDDDDDD; // dummy for now
+    st->deref[st->nderef].frm = (u_int64_t**)&st->calls[ncall].args[narg];
+    st->deref[st->nderef].to = x;
+    st->nderef++;
+    if(verbose) printf("argDeref %llx - %d %d\n", (unsigned long long)*x, ncall, narg);
+    return 0;
+}
+
+
 static int parseArg(struct slice *b, struct parseState *st, u_int64_t *x)
 {
     unsigned char typ;
@@ -277,13 +303,13 @@ static int parseArg(struct slice *b, struct parseState *st, u_int64_t *x)
     case 9: return parseArgPid(b, st, x);
     case 10: return parseArgRef(b, st, x);
     case 11: return parseArgVec32(b, st, x);
+    case 12: return parseArgDeref(b, st, x);
     default: return -1;
     }
 }
 
 int parseSysRec(struct sysRec *calls, int ncalls, struct slice *b, struct sysRec *x)
 {
-    struct parseState st;
     int i;
 
     /* chop input into several slices */
@@ -374,6 +400,16 @@ doSysRec(struct sysRec *x)
     return ret;
 }
 
+static void
+propDerefs(struct parseState *st)
+{
+    size_t i;
+
+    for(i = 0; i < st->nderef; i++) {
+        *st->deref[i].to = **st->deref[i].frm;
+    }
+}
+
 unsigned long
 doSysRecArr(struct sysRec *x, int n)
 {
@@ -381,7 +417,9 @@ doSysRecArr(struct sysRec *x, int n)
     int i;
 
     ret = 0;
-    for(i = 0; i < n; i++)
+    for(i = 0; i < n; i++) {
         ret = doSysRec(x + i);
+        propDerefs(&st);
+    }
     return ret;
 }

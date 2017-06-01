@@ -104,6 +104,11 @@ class Ref(object) :
         buf.pack('!BBB', 10, self.nc, self.na)
     def __repr__(self) :
         return 'Ref(%x %x)' % (self.nc, self.na)
+class Deref(Ref) :
+    def mkArg(self, buf, xtra) :
+        buf.pack('!BBB', 12, self.nc, self.na)
+    def __repr__(self) :
+        return 'Deref(%x %x)' % (self.nc, self.na)
 class Vec32(object) :
     def __init__(self, *vs) :
         assert len(vs) < 256
@@ -317,6 +322,10 @@ if __name__ == '__main__' :
     stdout = StdFile(21)
     call = channel_write, stdout, 0, buf, 4 * len(buf.v), 0, 0
     writeFn("inputs/exRio", mkSyscalls(call))
+
+    call1 = channel_create, 0, Vec64(0), Vec64(0)
+    call2 = channel_write, Deref(0, 2), 0, "Testing", l, 0, 0
+    writeFn("inputs/exMulti", mkSyscalls(call1, call2))
 
     # dont put this in inputs/
     #writeFn("./panicTest", mkSyscalls((PANICTEST, 1,2,3)))

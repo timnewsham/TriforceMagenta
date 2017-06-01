@@ -58,6 +58,9 @@ def parseArgVec32(g, bufs) :
     n = g.unpack1('B')
     vs = [parseArg(g, bufs) for cnt in xrange(n)]
     return Vec32(*vs)
+def parseArgDeref(g, bufs) :
+    nc,na = g.unpack('BB')
+    return Deref(nc, na)
 
 tyTab = {
     0: parseArgNum,
@@ -71,6 +74,7 @@ tyTab = {
     9: parseArgPid,
     10: parseArgRef,
     11: parseArgVec32,
+    12: parseArgDeref,
 }
 
 def parseArg(g, bufs) :
