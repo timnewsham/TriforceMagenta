@@ -42,5 +42,5 @@ Tested on magenta commit 867cff6b1131374f17446a032a4879117c098d5a
 - `aflCall.c argfd.c driver.c drv.h parse.c sysc.c sysc.h` - sources for the fuzz driver
 - `rules.mk private.h private-remoteio.h` - build helpers for building in magenta, with some stolen private headers
 - `Makefile testAfl.c` - testAfl tool for running tests from linux host
-- `gen.py` - Script for generating test inputs
+- `gen.py parse.py` - Scripts for generating test inputs and showing their contents
 - `runTest runFuzz runSh repro` - shell scripts for running tests, running a fuzzer, running the system normally, and reproing crashers.
