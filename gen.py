@@ -299,6 +299,24 @@ if __name__ == '__main__' :
     ex4 = (thread_create, 0, String("ThreadName"), l, 0, Vec64(0))
     writeFn("inputs/ex4", mkSyscalls(ex4))
 
+    # send MXRIO_WRITE to fd=1
+    MXRIO_WRITE = 6
+    msg = "Hello World\n"
+    assert len(msg) == 12
+    ws = struct.unpack('<III', msg)
+    buf = Vec32(
+            0x01020304, # txid
+            MXRIO_WRITE, # op
+            len(msg), # datalen
+            0, 0, 0, 0, # arg, arg2, reserved
+            0, 0, 0, 0, 0, # hcount, handle[0..3]
+            *ws # data[]
+            )
+    stdout = StdFile(21)
+    call = (channel_write, stdout, 0, buf, 4 * len(buf.v), 0, 0)
+    print call
+    writeFn("inputs/exRio", mkSyscalls(call))
+
     # dont put this in inputs/
     #writeFn("./panicTest", mkSyscalls((PANICTEST, 1,2,3)))
 

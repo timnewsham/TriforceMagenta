@@ -43,7 +43,6 @@ aflInit(void)
 static inline u_long
 aflCall(u_long a0, u_long a1, u_long a2)
 {
-    printf("do aflCall %lx %lx %lx\n", a0, a1, a2);
     u_long ret;
 #if __x86_64__
     __asm__(".byte 0x0f, 0x24" 
