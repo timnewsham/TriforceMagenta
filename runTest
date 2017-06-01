@@ -28,7 +28,7 @@ CRASH=`getSym panic_shell_start`
 ./testAfl $Q \
     -m 1024 -nographic -net none \
     -kernel $B/magenta.elf -initrd $B/bootdata.bin \
-    -append "TERM=xterm-256color kernel.entropy=562afa809d13833970ecb91af535b7f35d0adaadb6d0afc681a2366ab2d376b4 kernel.halt_on_panic=true magenta.autorun.boot=/boot/bin/fuzz" \
+    -append "TERM=xterm-256color kernel.entropy=562afa809d13833970ecb91af535b7f35d0adaadb6d0afc681a2366ab2d376b4 kernel.halt_on_panic=true fuzz=true" \
     -aflPanicAddr "$CRASH" \
     -aflFile @@ -- "$@"
 
