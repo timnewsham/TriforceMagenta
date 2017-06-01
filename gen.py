@@ -300,6 +300,8 @@ if __name__ == '__main__' :
     writeFn("inputs/ex4", mkSyscalls(ex4))
 
     # send MXRIO_WRITE to fd=1
+    # note: buffer lengths wont fuzz effectively because
+    # write len must be datalen + 48, which rarely happens by accident
     MXRIO_WRITE = 6
     msg = "Hello World\n"
     assert len(msg) == 12
@@ -313,8 +315,7 @@ if __name__ == '__main__' :
             *ws # data[]
             )
     stdout = StdFile(21)
-    call = (channel_write, stdout, 0, buf, 4 * len(buf.v), 0, 0)
-    print call
+    call = channel_write, stdout, 0, buf, 4 * len(buf.v), 0, 0
     writeFn("inputs/exRio", mkSyscalls(call))
 
     # dont put this in inputs/
