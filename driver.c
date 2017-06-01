@@ -157,7 +157,7 @@ main(int argc, char **argv)
 
     if(parseOk == 0 && filterCalls(filtCalls, nFiltCalls, recs, nrecs)) {
         /* trace kernel code while performing syscalls */
-        startWork(0xffffffff80100000L, 0xffffffffffffffffL);
+        startWork(0xffff000000000000L, 0xffffffffffffffffL);
 
         if(noSyscall) {
             x = 0;
