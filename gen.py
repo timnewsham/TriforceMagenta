@@ -27,11 +27,15 @@ class Num(object) :
     def mkArg(self, buf, xtra) :
         buf.pack('!B', 0)
         buf.pack('!Q', self.v)
+    def __repr__(self) :
+        return 'Num(%x)' % (self.v)
 class Alloc(object) :
     def __init__(self, sz) :
         self.sz = sz
     def mkArg(self, buf, xtra) :
         buf.pack('!BI', 1, self.sz)
+    def __repr__(self) :
+        return 'Alloc(%x)' % (self.sz)
 class String(object) :
     def __init__(self, v) :
         self.v = v
@@ -45,20 +49,28 @@ class String(object) :
         xtra.add(self.v)
     def mkArg(self, buf, xtra) :
         self.mkArgTyp(2, buf, xtra)
+    def __repr__(self) :
+        return 'String(%r)' % (self.v)
 def StringZ(v) :
     return String(v + '\0')
 
 class Len(object) :
     def mkArg(self, buf, xtra) :
         buf.pack('!B', 3)
+    def __repr__(self) :
+        return 'Len'
 class File(String) :
     def mkArg(self, buf, xtra) :
         self.mkArgTyp(4, buf, xtra)
+    def __repr__(self) :
+        return 'File(%r)' % (self.v)
 class StdFile(object) :
     def __init__(self, v) :
         self.v = v
     def mkArg(self, buf, xtra) :
         buf.pack('!BH', 5, self.v)
+    def __repr__(self) :
+        return 'StdFile(%x)' % (self.v)
 class Vec64(object) :
     def __init__(self, *vs) :
         assert len(vs) < 256
@@ -67,14 +79,20 @@ class Vec64(object) :
         buf.pack('!BB', 7, len(self.v))
         for x in self.v :
             mkArg(buf, xtra, x)
+    def __repr__(self) :
+        return 'Vec64(%r)' % (self.v,)
 class Filename(String) :
     def mkArg(self, buf, xtra) :
         self.mkArgTyp(8, buf, xtra)
+    def __repr__(self) :
+        return 'Filename(%r)' % (self.v)
 class Pid(object) :
     def __init__(self, v) :
         self.v = v
     def mkArg(self, buf, xtra) :
         buf.pack('!BB', 9, self.v)
+    def __repr__(self) :
+        return 'Pid(%x)' % (self.v)
 MyPid = Pid(0)
 PPid = Pid(1)
 ChildPid = Pid(2)
@@ -84,6 +102,8 @@ class Ref(object) :
         self.nc, self.na = nc,na
     def mkArg(self, buf, xtra) :
         buf.pack('!BBB', 10, self.nc, self.na)
+    def __repr__(self) :
+        return 'Ref(%x %x)' % (self.nc, self.na)
 class Vec32(object) :
     def __init__(self, *vs) :
         assert len(vs) < 256
@@ -92,6 +112,8 @@ class Vec32(object) :
         buf.pack('!BB', 11, len(self.v))
         for x in self.v :
             mkArg(buf, xtra, x)
+    def __repr__(self) :
+        return 'Vec32(%r)' % (self.v,)
 
 def mkArg(buf, xtra, x) :
     if isinstance(x, str) :
