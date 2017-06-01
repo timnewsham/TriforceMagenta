@@ -74,7 +74,7 @@ filterCalls(unsigned short *filtCalls, int nFiltCalls, struct sysRec *recs, int 
     return 1;
 }
 
-int verbose = 0;
+int verbose = 1;
 
 int
 main(int argc, char **argv)
