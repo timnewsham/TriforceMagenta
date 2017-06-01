@@ -198,30 +198,10 @@ static int parseArgFilename(struct slice *b, struct parseState *st, u_int64_t *x
     return 0;
 }
 
-static int
-mkChild(u_int64_t *retPid)
-{
-    pid_t pid;
-    int i;
-
-    fflush(stdout);
-    pid = fork();
-    switch(pid) {
-    case -1: return -1;
-    case 0:
-        break;
-    default:
-        *retPid = pid;
-        return 0;
-    }
-
-    /* child process */
-    for(i = 0; i < 3; i++)
-        sleep(1);
-    exit(0);
-}
-
-/* use a pid related to our process as an arg */
+/* 
+ * use a pid related to our process as an arg 
+ * a holdover from unix fuzzing.. this isnt really important for magenta
+ */
 static int parseArgPid(struct slice *b, struct parseState *st, u_int64_t *x)
 {
     unsigned char typ;
@@ -229,15 +209,8 @@ static int parseArgPid(struct slice *b, struct parseState *st, u_int64_t *x)
     if(getU8(b, &typ) == -1)
         return -1;
     switch(typ) {
-    case 0: // my pid
-        *x = getpid(); 
-        break;
-    case 1: // parent pid
-        *x = getppid(); 
-        break;
-    case 2: // child pid
-        if(mkChild(x) == -1)
-            return -1;
+    case 0: // nothing...
+        *x = 0;
         break;
     default:
         return -1;
