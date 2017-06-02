@@ -378,10 +378,12 @@ doSysRec(struct sysRec *x)
     register uint64_t a3 __asm__("r10") = x->args[3];
     register uint64_t a4 __asm__("r8") = x->args[4];
     register uint64_t a5 __asm__("r9") = x->args[5];
+    register uint64_t a6 __asm__("r12") = x->args[6];
+    register uint64_t a7 __asm__("r13") = x->args[7];
     __asm__(
         "syscall\n"
         : "=a"(ret)
-        : "a"(nr), "D"(a0), "S"(a1), "d"(a2), "r"(a3), "r"(a4), "r"(a5)
+        : "a"(nr), "D"(a0), "S"(a1), "d"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6), "r"(a7)
         );
 #elif __aarch64__
     register uint64_t nr __asm__("x16") = x->nr;
@@ -391,10 +393,12 @@ doSysRec(struct sysRec *x)
     register uint64_t a3 __asm__("x3") = x->args[3];
     register uint64_t a4 __asm__("x4") = x->args[4];
     register uint64_t a5 __asm__("x5") = x->args[5];
+    register uint64_t a6 __asm__("x6") = x->args[6];
+    register uint64_t a7 __asm__("x7") = x->args[7];
     __asm__(
         "svc #0x0\n"
         : "=r"(ret)
-        : "r"(nr), "r"(a0), "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5)
+        : "r"(nr), "r"(a0), "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6), "r"(a7)
         );
 #endif
     return ret;
