@@ -83,6 +83,11 @@ mx_handle_t getStdFile(int typ)
     S(24,25, AF_INET, SOCK_DGRAM, 0);
     S(26,27, AF_INET6, SOCK_STREAM, 0);
     S(28,29, AF_INET6, SOCK_DGRAM, 0);
+
+    /* mx proc handles */
+    case 30: h = mx_process_self(); break;
+    case 31: h = mx_vmar_root_self(); break;
+    case 32: h = mx_job_default(); break;
     }
     return h;
 }
