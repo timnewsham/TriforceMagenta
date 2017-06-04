@@ -354,7 +354,7 @@ int parseSysRecArr(struct slice *b, int maxRecs, struct sysRec *x, int *nRecs)
 void
 showSysRec(struct sysRec *x)
 {
-    printf("syscall %d (%lx, %lx, %lx, %lx, %lx, %lx)\n", x->nr, (u_long)x->args[0], (u_long)x->args[1], (u_long)x->args[2], (u_long)x->args[3], (u_long)x->args[4], (u_long)x->args[5]);
+    printf("syscall %d (%lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx)\n", x->nr, (u_long)x->args[0], (u_long)x->args[1], (u_long)x->args[2], (u_long)x->args[3], (u_long)x->args[4], (u_long)x->args[5], (u_long)x->args[6], (u_long)x->args[7]);
 }
 
 void
