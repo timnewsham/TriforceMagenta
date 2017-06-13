@@ -50,7 +50,7 @@ def parseArgVec64(g, bufs) :
 def parseArgFilename(g, bufs) :
     return Filename(pop(bufs))
 def parseArgPid(g, bufs) :
-    return Pid(g.unpack('B'))
+    return Pid(g.unpack1('B'))
 def parseArgRef(g, bufs) :
     nc,na = g.unpack('BB')
     return Ref(nc, na)
@@ -94,11 +94,8 @@ def parseSyscall(buf) :
     return ret
 
 def parseSyscalls(buf) :
-    try :
-        cs = buf.split(CALLDELIM)
-        return [parseSyscall(c) for c in cs]
-    except Error, e :
-        return e
+    cs = buf.split(CALLDELIM)
+    return [parseSyscall(c) for c in cs]
 
 def readFile(fn) :
     with file(fn, 'r') as f :
@@ -113,7 +110,10 @@ def show(x) :
 def main() :
     for fn in sys.argv[1:] :
         print fn
-        x = readFile(fn)
+        try :
+            x = readFile(fn)
+        except Error, e :
+            x = e
         show(x)
         print
 
