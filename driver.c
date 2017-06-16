@@ -140,6 +140,12 @@ main(int argc, char **argv)
     if(!aflTestMode)
         watcher();
 #endif
+
+    // let the system settle down after boot
+    sleep(3);
+    printf("start\n");
+    fflush(stdout);
+
     startForkserver(enableTimer);
     buf = getWork(&sz);
     //printf("got work: %d - %.*s\n", sz, (int)sz, buf);
