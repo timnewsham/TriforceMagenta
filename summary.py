@@ -36,7 +36,7 @@ def proc(ls) :
         keep += 'stack: ' + stack
     if keep and (not SKIPKNOWN or not isKnown(keep)) :
         if SHOWFN :
-            print fn
+            print fn,
         print keep
 
 import callsNew
@@ -51,7 +51,10 @@ for n in ns :
 SHOWFN = 1 if os.getenv("SHOWFN") else 0
 SKIPKNOWN = 1
 
-f = file('crashLog-x86_64.txt','r')
+if os.getenv('AARCH64') :
+    f = file('crashLog-aarch64.txt','r')
+else :
+    f = file('crashLog-x86_64.txt','r')
 
 r = []
 for l in f :
