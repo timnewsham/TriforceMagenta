@@ -7,14 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <launchpad/launchpad.h>
+#include <magenta/syscalls.h>
 
 #include "drv.h"
 #include "sysc.h"
 
 #define MAXFILTCALLS 10
 
-static void usage(char *prog) {
-    printf("usage:  %s [-tvx] [-f nr]* [input]\n", prog);
+static void usage(const char *prog) {
+    printf("usage:  %s [watch] [-tvx] [-f nr]* [input]\n", prog);
+    printf("\t\twatch\tRun tests in a child process, watching for its death\n");
     printf("\t\t-f nr\tFilter out cases that dont make this call. Can be repeated\n");
     printf("\t\t-t\ttest mode, dont use AFL hypercalls\n");
     printf("\t\t-T\tenable qemu's timer in forked children\n");
@@ -23,23 +26,46 @@ static void usage(char *prog) {
     exit(1);
 }
 
-#ifdef NOTYET
 /* 
- * catch the driver if it dies and end the test successfully.
- * The driver getting killed is good behavior, not a kernel flaw.
+ * Execute tests in a child process, and watch for its death.
  */
-static void watcher(void) {
-    int pid, status;
+static void watcher(int argc, char** argv) {
+    /* shift args */
+    char *prog = argv[0];
+    argv++;
+    argc--;
 
-    if((pid = fork()) == 0)
-        return;
+    launchpad_t *lp;
+    launchpad_create(0, "fuzz-child", &lp);
+    launchpad_load_from_file(lp, prog);
+    launchpad_clone(lp, LP_CLONE_ALL);
+    launchpad_set_args(lp, argc, (const char * const*)argv);
+    mx_handle_t proc;
+    const char *err;
+    mx_status_t st = launchpad_go(lp, &proc, &err);
+    if(st != NO_ERROR) {
+        printf("failed to launch: %d %s\n", st, err);
+        exit(1);
+    }
+    st = mx_object_wait_one(proc, MX_PROCESS_TERMINATED, MX_TIME_INFINITE, NULL);
+    if(st != NO_ERROR) {
+        printf("failed to wait %d\n", st);
+        exit(1);
+    }
 
-    waitpid(pid, &status, 0);
+    mx_info_process_t info;
+    st = mx_object_get_info(proc, MX_INFO_PROCESS, &info, sizeof info, NULL, NULL);
+    mx_handle_close(proc);
+    if(st != NO_ERROR) {
+        printf("failed to get info %d\n", st);
+        exit(1);
+    }
+
     /* if we got here the driver died */
+    printf("child died: %d\n", info.return_code);
     doneWork(0);
     exit(0);
 }
-#endif
 
 static int
 parseU16(char *p, unsigned short *x)
@@ -82,7 +108,7 @@ main(int argc, char **argv)
     struct sysRec recs[3];
     struct slice slice;
     unsigned short filtCalls[MAXFILTCALLS];
-    char *prog, *buf;
+    char *buf, *prog;
     u_long sz;
     long x;
     int opt, nrecs, nFiltCalls, parseOk;
@@ -91,6 +117,11 @@ main(int argc, char **argv)
 
     nFiltCalls = 0;
     prog = argv[0];
+    if(argc > 1 && strcmp(argv[1], "watch") == 0) {
+        sleep(2); // let the system settle down after boot
+        watcher(argc, argv);
+        return 0; // not reached
+    }
     while((opt = getopt(argc, argv, "f:tTvx")) != -1) {
         switch(opt) {
         case 'f': 
@@ -135,16 +166,6 @@ main(int argc, char **argv)
     }
     if(argc)
         usage(prog);
-
-#ifdef NOETYET
-    if(!aflTestMode)
-        watcher();
-#endif
-
-    // let the system settle down after boot
-    sleep(3);
-    printf("start\n");
-    fflush(stdout);
 
     startForkserver(enableTimer);
     buf = getWork(&sz);

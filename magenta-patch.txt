@@ -54,14 +54,14 @@ index 3e9c778..265c6a3 100644
                        });
  }
 diff --git a/system/core/devmgr/devmgr.c b/system/core/devmgr/devmgr.c
-index eb6a448..9ac0e53 100644
+index eb6a448..864f88a 100644
 --- a/system/core/devmgr/devmgr.c
 +++ b/system/core/devmgr/devmgr.c
 @@ -213,6 +213,7 @@ static mx_status_t block_device_added(int dirfd, int event, const char* name, vo
  }
  
  static const char* argv_sh[] = { "/boot/bin/sh" };
-+static const char* argv_fuzzer[] = { "/boot/bin/fuzz", "-vv" };
++static const char* argv_fuzzer[] = { "/boot/bin/fuzz", "watch", "-vv" };
  static const char* argv_autorun0[] = { "/boot/bin/sh", "/boot/autorun" };
  static const char* argv_appmgr[] = { "/system/bin/appmgr" };
  

@@ -8,6 +8,6 @@ MODULE_SRCS += \
     $(LOCAL_DIR)/aflCall.c \
     $(LOCAL_DIR)/argfd.c
 MODULE_NAME := fuzz
-MODULE_LIBS := system/ulib/magenta system/ulib/mxio system/ulib/c
+MODULE_LIBS := system/ulib/magenta system/ulib/mxio system/ulib/c system/ulib/launchpad
 USER_MANIFEST_LINES += src/ex1=$(LOCAL_DIR)/inputs/ex1
 include make/module.mk
