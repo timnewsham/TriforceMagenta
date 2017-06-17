@@ -43,12 +43,12 @@ static void watcher(int argc, char** argv) {
     mx_handle_t proc;
     const char *err;
     mx_status_t st = launchpad_go(lp, &proc, &err);
-    if(st != NO_ERROR) {
+    if(st != MX_OK) {
         printf("failed to launch: %d %s\n", st, err);
         exit(1);
     }
     st = mx_object_wait_one(proc, MX_PROCESS_TERMINATED, MX_TIME_INFINITE, NULL);
-    if(st != NO_ERROR) {
+    if(st != MX_OK) {
         printf("failed to wait %d\n", st);
         exit(1);
     }
@@ -56,7 +56,7 @@ static void watcher(int argc, char** argv) {
     mx_info_process_t info;
     st = mx_object_get_info(proc, MX_INFO_PROCESS, &info, sizeof info, NULL, NULL);
     mx_handle_close(proc);
-    if(st != NO_ERROR) {
+    if(st != MX_OK) {
         printf("failed to get info %d\n", st);
         exit(1);
     }
