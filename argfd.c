@@ -62,7 +62,8 @@ mx_handle_t getStdFile(int typ)
     case 12: mx_socket_create(0, &dummy, &h); break;
     case 13: mx_thread_create(0, "thread", 6, 0, &h); break;
     case 14: mx_vmo_create(8192, 0, &h); break;
-    case 15: mx_waitset_create(0, &h); break;
+    // syscall has been removed
+    //case 15: mx_waitset_create(0, &h); break;
 
     /* handles to channels to servers for "files" */
 #define F(n, fn, flg) case n: fd = open(fn, flg); h = fdToHandle1(fd); break;

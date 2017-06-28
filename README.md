@@ -25,7 +25,7 @@ Fuzzer for Magenta using Triforce AFL
   crash from the shell run `fuzz -tvv /path/to/inputfile` specifying
   the location where you installed the input file.
 
-Tested on magenta commit 0a8173d9cce3af9c9567d882a0572c6112778136
+Tested on magenta commit d65c8bdc4dbedc417be1d2a93f5a7e5aa24c914b
 - note: I had to steal an internal header file.  this should be
   kept up to date if newer versions of magenta are used
 - note: I had to patch a few parts of the Magenta system to support

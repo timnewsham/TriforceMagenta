@@ -1,5 +1,5 @@
 #!/bin/sh
 
 script -c "./runTest outputs/*/crashes/id*" crashLog-x86_64.txt
-export AARCH64=1
-script -c "./runTest outputs/*/crashes/id*" crashLog-aarch64.txt
+#export AARCH64=1
+#script -c "./runTest outputs/*/crashes/id*" crashLog-aarch64.txt
