@@ -25,11 +25,25 @@ Fuzzer for Magenta using Triforce AFL
   crash from the shell run `fuzz -tvv /path/to/inputfile` specifying
   the location where you installed the input file.
 
-Tested on magenta commit d65c8bdc4dbedc417be1d2a93f5a7e5aa24c914b
+Tested on magenta commit c088a1c6ee4531e08e51d5094c19511dcfcc4372
 - note: I had to steal an internal header file.  this should be
   kept up to date if newer versions of magenta are used
 - note: I had to patch a few parts of the Magenta system to support
   calling arbitrary syscalls from arbitrary program locations.
+
+## System Call Numbers
+
+Magenta autogenerates syscall numbers at build time and the
+numbers are not stable.  `getCalls.py` will extract the
+call numbers.  `callsOld.py` and `callsNew.py` are generated
+files with syscall numbers.  The `trans.py` tool can translate
+test cases between old syscall numbers and new syscall numbers.
+This is useful with long running fuzzing jobs when you want 
+to reproduce crashes against a newer kernel.  Simply set
+`callsOld.py` when you start your fuzzer job.  Every time you
+update the kernel, generate a new `callsNew.py` and translate all
+queue or crash files with `trans.py` before trying them against
+the newer kernel.
 
 ## Aarch64
 
